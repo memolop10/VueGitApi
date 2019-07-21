@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="app">
+             <input type="text" v-model="username" placeholder="Escribe tu usuario de github">
+
+             <ul v-for="repo in repos"><li> {{repo.name}} </li></ul>
+        </div>
+
+    <script src="https://unpkg.com/vue"></script>
+
+    <script>
+        function git(username){ 
+            return fetch(`https://api.github.com/users/${username}/repos`)
+                    .then(response => response.json());
+        }
+
+        function debounce(func, wait, inmediate){
+            self.timeout = self.timeout || null;
+            return function(){
+                var context = this , args = arguments;
+                clearTimeout(self, timeout);
+                self.timeout = setTimeout(function(){
+                    self.timeout = null;
+
+                    if(!inmediate)
+                        func.apply(context,args);
+                    }, wait);
+
+                    if(inmediate && !self.timeout)
+                    func.apply(context,args);
+                };
+               
+            }
+        
+
+        new Vue({
+            el:'#app',
+            data:{
+                username:'',
+                repos:[]
+            },
+
+            watch:{
+                username: function (newValue, oldValue) {
+                
+                    debounce(() => {
+                        git(this.username).then(repos =>{
+                            if(repos.length > 0 && repos[0].id)
+                            this.repos = repos;
+                        });
+                    },500)();
+                
+                }
+            }
+        })
+    </script>
+    </body>
+</html>
